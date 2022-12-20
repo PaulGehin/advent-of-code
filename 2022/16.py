@@ -37,9 +37,15 @@ def compute(my_position, elephant_position, my_travel, elephant_travel, graph, r
         return score
 
     if my_travel > 0 and elephant_travel > 0:
-        return compute(
-            my_position, elephant_position, my_travel - 1, elephant_travel - 1, graph, rates, visited, score, minutes - 1
-        )
+        return compute(my_position,
+                       elephant_position,
+                       my_travel - 1,
+                       elephant_travel - 1,
+                       graph,
+                       rates,
+                       visited,
+                       score,
+                       minutes - 1)
 
     best = score
     if my_travel == 0:
