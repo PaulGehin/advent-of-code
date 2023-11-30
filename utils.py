@@ -96,7 +96,14 @@ def submit_data(day: int, year: int, part: int, resu: str) -> bool:
     return "That's the right answer!" in r.text
 
 
-def run_part(part, code, data, test=False, day=None, year=None, submit=False):
+def check_data(day: int, year: int, part: int, resu: str) -> bool:
+    r = requests.get(url=f"https://adventofcode.com/{year}/day/{day}", cookies=credentials.cookies())
+    soup = BeautifulSoup(r.content, 'html.parser')
+    code = soup.select(f"body > main > p > code")
+    return str(resu) == code[part-1].text
+
+
+def run_part(part, code, data, test=False, day=None, year=None, submit=False, check=False):
     f = getattr(code, f"resu{part}", None)
     if callable(f):
         start = time.perf_counter()
@@ -109,17 +116,22 @@ def run_part(part, code, data, test=False, day=None, year=None, submit=False):
             print(f"Output: {resu}")
             if submit and day is not None and year is not None:
                 print(f"Completed: {submit_data(day, year, part, resu)}")
+            if check:
+                print(f"Check: {check_data(day, year, part, resu)}")
         print(f"Runtime {format_runtime(runtime)}")
 
 
-def run_year(year=get_year(), bypasstest=False):
+def run_year(year=get_year(), bypasstest=False, check=False):
     if year == get_year() and (get_month() < 12 or get_today() < 25):
         year -= 1
     for day in range(1, 26):
-        run(day=day, year=year, bypasstest=bypasstest)
+        try:
+            run(day=day, year=year, bypasstest=bypasstest, check=check)
+        finally:
+            ...
 
 
-def run(day=get_today(), year=get_year(), bypasstest=False, submit=True):
+def run(day=get_today(), year=get_year(), bypasstest=False, submit=True, check=False):
     start = time.perf_counter()
     print(f"Date: {format_day(day)}/12/{year}")
     code = getattr(__import__(f"{year}.{format_day(day)}"), format_day(day))
@@ -132,7 +144,7 @@ def run(day=get_today(), year=get_year(), bypasstest=False, submit=True):
     for part in range(1, 3):
         print(f"Part {part}")
         if bypasstest or run_part(part, code, data=datatest, test=True):
-            run_part(part, code, data=data, test=False, day=day, year=year, submit=submit)
+            run_part(part, code, data=data, test=False, day=day, year=year, submit=submit, check=check)
         else:
             print("Test Failed")
 
